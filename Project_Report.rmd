@@ -1,0 +1,43 @@
+---
+title: "Group project assessment [template]"
+author: '[update with group members'' exam numbers]'
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+NOTE: Please don't edit this template directly. Use `File` > `Save as` to create a copy of this document, rename it (remove the word "template" from the file name) and use that new version to write your report. Make sure to also update the Title and Author fields in the YAML of your .Rmd file.
+
+## Task 1: Reproducing and improving figures
+
+```{r load-wrangle}
+# load and wrangle the data here
+
+
+```
+
+
+### Figure 3
+```{r figure-3}
+# Write your code for reproducing, and then improving Figure 3. Present both figures together. Under the figures, explain how you've improved Figure 3 and why you consider this an improvement.
+```
+
+
+### Figure 4
+```{r figure-4}
+# Write your code for reproducing, and then improving Figure 4. Present both figures together. Under the figures, explain how you've improved Figure 4 and why you consider this an improvement.
+```
+
+
+### Figure 5
+```{r figure-5}
+# Write your code for reproducing, and then improving Figure 5. Present both figures together. Under the figures, explain how you've improved Figure 5 and why you consider this an improvement.
+```
+
+
+## Task 2: FAIR data principles
+
+## Task 3: Reproducibility brief
