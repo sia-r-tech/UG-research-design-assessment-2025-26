@@ -28,7 +28,7 @@ NOTE: Please don't edit this template directly. Use `File` > `Save as` to create
 
 ### Figure 4
 ```{r figure-4}
-# Write your code for reproducing, and then improving Figure 4. Present both figures together. Under the figures, explain how you've improved Figure 4 and why you consider this an improvement.
+# Write your code for reproducing, and then improving Figure 4. Present both figures together. Under the figures, explain how you've improved Figure 3 and why you consider this an improvement.
 ```
 
 
