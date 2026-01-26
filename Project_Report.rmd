@@ -104,7 +104,7 @@ plot_original <- ggplot(fig3_data, aes(x = group_label, y = percentage, fill = c
 plot_original
 ```
 
-Improved Plot:
+### Improved Plot:
 ```{r}
 # PREPARE DATA
 fig3_faceted <- fig3_data %>%
