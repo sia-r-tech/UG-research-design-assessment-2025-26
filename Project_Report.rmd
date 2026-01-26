@@ -29,6 +29,159 @@ NOTE: Please don't edit this template directly. Use `File` > `Save as` to create
 ### Figure 4
 ```{r figure-4}
 # Write your code for reproducing, and then improving Figure 4. Present both figures together. Under the figures, explain how you've improved Figure 3 and why you consider this an improvement.
+
+install.packages(c("tidyverse", "readxl", "janitor", "dplyr"))
+
+library(tidyverse)
+library(readxl)
+library(janitor)
+library(dplyr)
+
+
+
+setwd("C:/Users/user/OneDrive - University of Edinburgh/data-science/Group_proj")
+
+HIIT_post <- readr::read_csv(
+  "UG-research-design-assessment-2025-26/data/HIIT-postpartum-depression.csv"   ,
+  na = c("", "NA", "#NULL!")
+) %>% 
+  janitor::clean_names()
+
+
+
+fs_long <- HIIT_post %>%
+  mutate(
+    group = case_when(
+      intervention_group == 1 ~ "HIIT",
+      intervention_group == 2 ~ "EDU",
+      TRUE ~ as.character(intervention_group)
+    )
+  ) %>%
+  select(group, pre_fs_scale, post_fs_score, postnatal_florishing_scale_score) %>%
+  pivot_longer(
+    cols = c(pre_fs_scale, post_fs_score, postnatal_florishing_scale_score),
+    names_to = "time",
+    values_to = "fs"
+  ) %>%
+  mutate(
+    time = factor(
+      time,
+      levels = c("pre_fs_scale", "post_fs_score", "postnatal_florishing_scale_score"),
+      labels = c(
+        "Before the intervention\n(II trimester of pregnancy)",
+        "After the intervention\n(III trimester of pregnancy)",
+        "Follow-up\n(± 5 months postpartum)"
+      )
+    ),
+    fs = as.numeric(fs)
+  ) %>%
+  filter(!is.na(fs), group %in% c("HIIT", "EDU"))
+
+#Now computing Mean (M) and SD per group/time for figure 4 
+fs_sum <- fs_long %>%
+  group_by(group, time) %>%
+  summarise(
+    n = n(),
+    mean = mean(fs),
+    sd = sd(fs),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    label = sprintf("M = %.2f", mean)
+  )
+#Labels and Line Spacing 
+ fs_sum <- fs_sum %>%
+  mutate(
+    label_nudge = case_when(
+      group == "HIIT" & time == "After the intervention\n(III trimester of pregnancy)" ~ 1.1,
+      group == "EDU"  & time == "After the intervention\n(III trimester of pregnancy)" ~ -1.1,
+      group == "HIIT" ~ 0.7,
+      group == "EDU"  ~ -0.7
+    )
+  )
+ 
+ #Plot for Figure 4 
+p <- ggplot(fs_sum, aes(x = time, y = mean, group = group, linetype = group)) +
+  geom_errorbar(
+    aes(ymin = mean - sd, ymax = mean + sd),
+    width = 0.08,
+    linewidth = 0.6
+  ) +
+  geom_line(linewidth = 0.9) +
+  geom_point(size = 2.2) +
+  
+  geom_text(
+  aes(label = label, y = mean + label_nudge),
+    nudge_x = 0.12,
+  size = 3.2
+) +
+
+  scale_linetype_manual(
+    values = c("HIIT" = "solid", "EDU" = "dotted"),
+    labels = c("HIIT" = "HIIT – High Intensity Interval Training Group",
+               "EDU" = "EDU – Educational Intervention Group")
+  ) +
+ scale_y_continuous(
+    limits = c(40, 60),
+    breaks = seq(40, 60, 2),
+      labels = function(x) sprintf("%.2f", x)
+  ) +
+  labs(
+    x = NULL,
+    y = NULL,
+    linetype = NULL
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    legend.position = "bottom",
+    panel.grid.minor = element_blank()
+  )
+
+p
+
+```
+
+### Improvement Figure 4
+
+```{r}
+install.packages("ggrepel")
+library(tidyverse)
+library(janitor)
+library(scales)
+library(here)
+library(ggrepel)
+
+fs_long <- HIIT_post %>%
+  mutate(
+    group = recode(as.character(intervention_group),
+                   "1" = "HIIT",
+                   "2" = "EDU",
+                   .default = NA_character_)
+  ) %>%
+  select(group,
+         pre_fs_scale,
+         post_fs_score,
+         postnatal_florishing_scale_score) %>%
+  pivot_longer(
+    cols = c(pre_fs_scale, post_fs_score, postnatal_florishing_scale_score),
+    names_to = "time",
+    values_to = "fs"
+  ) %>%
+  mutate(
+    time = factor(
+      time,
+      levels = c("pre_fs_scale", "post_fs_score", "postnatal_florishing_scale_score"),
+      labels = c(
+        "Before the intervention\n(II trimester of pregnancy)",
+        "After the intervention\n(III trimester of pregnancy)",
+        "Follow-up\n(± 5 months postpartum)"
+      )
+    ),
+    group = factor(group, levels = c("EDU", "HIIT")),
+    fs = as.numeric(fs)
+  ) %>%
+  filter(!is.na(fs), !is.na(group))
+
 ```
 
 
