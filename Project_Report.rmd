@@ -2,11 +2,13 @@
 title: "Group project assessment [template]"
 author: '[update with group members'' exam numbers]'
 date: "`r Sys.Date()`"
-output: html_document
+output:
+  html_document:
+    code_folding: hide
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 ```
 
 NOTE: Please don't edit this template directly. Use `File` > `Save as` to create a copy of this document, rename it (remove the word "template" from the file name) and use that new version to write your report. Make sure to also update the Title and Author fields in the YAML of your .Rmd file.
@@ -20,6 +22,194 @@ NOTE: Please don't edit this template directly. Use `File` > `Save as` to create
 ```
 
 
+### Figure 3
+```{r figure-3}
+# Write your code for reproducing, and then improving Figure 3. Present both figures together. Under the figures, explain how you've improved Figure 3 and why you consider this an improvement.
+library(tidyverse)
+library(janitor)
+library(here) 
+
+# LOAD DATA 
+data_path <- here("data", "HIIT-postpartum-depression.csv")
+
+# Check if file exists 
+if (!file.exists(data_path)) {
+  stop("Error: R still can't find the file! Make sure you created a folder named 'data' and put the CSV inside it.")
+}
+
+# Read the data 
+data_raw <- read_csv(data_path, na = c("", "NA", "#NULL!")) %>%
+  clean_names()
+
+# PREPARE THE DATA FOR FIGURE 3
+fig3_data <- data_raw %>%
+  select(intervention_group, epds_score = edinburg_postnatal_depression_scale_score) %>%
+  mutate(epds_score = as.numeric(epds_score)) %>%
+  drop_na(epds_score) %>%
+  
+  mutate(category = case_when(
+    epds_score < 10 ~ "range indicating the norm (below 10 points)",
+    epds_score >= 10 & epds_score <= 11 ~ "slightly increased severity of PPD symptoms (10-11 points)",
+    epds_score >= 12 ~ "increased severity of PPD symptoms (12 or more points)"
+  )) %>%
+  
+  mutate(group_label = case_when(
+    intervention_group == 1 ~ "HIIT – High Intensity Interval Training Group",
+    intervention_group == 2 ~ "EDU – Educational Intervention Group"
+  )) %>%
+  
+  group_by(group_label, category) %>%
+  summarise(count = n(), .groups = "drop") %>%
+  group_by(group_label) %>%
+  mutate(percentage = count / sum(count) * 100) %>%
+  
+  # EDU TO TOP
+  mutate(group_label = factor(group_label, levels = c(
+    "HIIT – High Intensity Interval Training Group", 
+    "EDU – Educational Intervention Group"
+  ))) %>%
+  
+  # LEGEND ORDER
+  mutate(category = factor(category, levels = c(
+    "increased severity of PPD symptoms (12 or more points)",
+    "slightly increased severity of PPD symptoms (10-11 points)",
+    "range indicating the norm (below 10 points)"
+  )))
+
+# PLOT FIGURE 3
+plot_original <- ggplot(fig3_data, aes(x = group_label, y = percentage, fill = category)) +
+  geom_col(width = 0.5) +
+  coord_flip() +
+  scale_fill_manual(values = c(
+    "range indicating the norm (below 10 points)" = "#8daef0",
+    "slightly increased severity of PPD symptoms (10-11 points)" = "#1d4487",
+    "increased severity of PPD symptoms (12 or more points)" = "#b33925"
+  )) +
+  scale_y_continuous(labels = function(x) paste0(x, ".00%"), 
+                     expand = expansion(mult = c(0, 0.05))) +
+  labs(
+    title = "FIGURE 3   Distribution of EPDS results (within cut-off points) in the HIIT and EDU groups in the\npostpartum assessment (time 3).",
+    x = NULL, y = NULL, fill = NULL
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "bottom",
+    legend.direction = "vertical",
+    legend.justification = "center",
+    panel.grid.major.y = element_blank(),
+    panel.grid.major.x = element_line(color = "gray80"),
+    plot.title = element_text(size = 11, face = "bold", hjust = 0),
+    legend.text = element_text(size = 9)
+  ) +
+  guides(fill = guide_legend(reverse = TRUE))
+
+plot_original
+```
+
+### Improvement Figure 3:
+```{r}
+# PREPARE DATA
+fig3_faceted <- fig3_data %>%
+  # Create short Group Names
+  mutate(group_short = case_when(
+    str_detect(group_label, "HIIT") ~ "HIIT",
+    str_detect(group_label, "EDU") ~ "EDU"
+  )) %>%
+  # Create short Category Names
+  mutate(category_short = case_when(
+    str_detect(category, "norm") ~ "Normal",
+    str_detect(category, "slightly") ~ "Moderate",
+    str_detect(category, "increased") ~ "Severe"
+  )) %>%
+  # Order: Normal -> Moderate -> Severe
+  mutate(category_short = factor(category_short, levels = c(
+    "Normal",      
+    "Moderate",  
+    "Severe"       
+  ))) %>%
+  
+  # CALCULATE ERROR BARS (Wilson Score) 
+  group_by(group_short) %>%
+  mutate(total_n = sum(count)) %>%
+  group_by(group_short, category_short) %>%
+  mutate(
+    p = count / total_n,
+    z = 1.96, n = total_n,
+    p_tilde = (p + z^2/(2*n)) / (1 + z^2/n),
+    me = z * sqrt((p*(1-p) + z^2/(4*n))/n) / (1 + z^2/n),
+    ci_lower = pmax(0, (p_tilde - me) * 100),
+    ci_upper = pmin(100, (p_tilde + me) * 100)
+  ) %>%
+  
+  # CREATE PANELS 
+  mutate(panel_group = case_when(
+    category_short == "Normal" ~ "Normal Range (Scale 0-100%)",
+    TRUE ~ "Clinical Range (Scale 0-40%)" # Moderate & Severe
+  )) %>%
+  mutate(panel_group = factor(panel_group, levels = c(
+    "Normal Range (Scale 0-100%)", 
+    "Clinical Range (Scale 0-40%)"
+  ))) %>%
+  
+  #  FIX LABEL POSITION 
+  mutate(label_y_pos = case_when(
+    # Normal Panel (Scale 0-100): Add 1.5% buffer
+    category_short == "Normal" ~ ci_upper + 1.5,
+    # Clinical Panel (Scale 0-40): Add 0.4% buffer 
+    TRUE ~ ci_upper + 0.4
+  ))
+
+# PLOT
+improved_plot <- ggplot(fig3_faceted, aes(x = category_short, y = percentage, fill = group_short)) +
+  
+  # BARS
+  geom_col(position = position_dodge(width = 0.9), width = 0.8, color = "black", size = 0.3) +
+  
+  # ERROR BARS
+  geom_errorbar(aes(ymin = ci_lower, ymax = ci_upper), 
+                position = position_dodge(width = 0.9), 
+                width = 0.25, color = "black", linewidth = 0.6) +
+  
+  # DATA LABELS 
+  geom_text(aes(label = paste0("n=", count, "\n(", round(percentage, 0), "%)"), 
+                y = label_y_pos), 
+            position = position_dodge(width = 0.9), 
+            vjust = 0, # Sit exactly on the calculated point
+            fontface = "bold", size = 3, color = "black") +
+  
+  # FACETING
+  facet_wrap(~panel_group, scales = "free") + 
+  
+  # COLORS
+  scale_fill_manual(values = c(
+    "HIIT" = "#56B4E9",  # Sky Blue
+    "EDU" = "#D55E00"    # Vermilion
+  )) +
+  
+  # SCALES
+  scale_y_continuous(labels = function(x) paste0(x, "%"), 
+                     expand = expansion(mult = c(0, 0.2))) +
+  
+  # TITLES
+  labs(
+    title = "Postpartum Depression Severity by Group",
+    subtitle = "Faceted view highlights clinical differences (Note different Y-axis scales)",
+    x = NULL, y = "Prevalence (%)", fill = "Group"
+  ) +
+  
+  # THEME
+  theme_bw(base_size = 12) +
+  theme(
+    legend.position = "top",
+    legend.justification = "left",
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.grid.major.y = element_line(color = "grey90"),
+    strip.background = element_rect(fill = "grey95", color = "black"),
+    strip.text = element_text(face = "bold", size = 11),
+    axis.text = element_text(color = "black", face = "bold", size = 11),
+    axis.text.x = element_text(size = 10)
+  )
 
 
 
@@ -101,7 +291,9 @@ fs_sum <- fs_long %>%
     label = sprintf("M = %.2f", mean)
   )
 ```
+### Explanation of improvements
 
+The original stacked bar format made it difficult to directly compare depression severity between the HIIT and EDU (control) groups and lacked error bars. We switched to a vertical bar chart split by depression levels for easier comparison between groups and faceted the plots so the differences in the clinical range can be viewed more easily. Wilson scores (95 confidence intervals) were added as error bars due to low sample size to show the reliability of the percentages. Exact percentage labels and sample numbers were added to eliminate guessing.
 
 ```{r figure-4-plot}
 fs_sum <- fs_sum %>%
@@ -312,6 +504,16 @@ fig4_imp
 
 ## Explanation of Improvements 
 The new graph improves readability by dodging the two groups slightly using the "position_dodge" function. By doing this, it prevents the standard deviation error bars from overlapping, making interpretation easier. We also made the group identity clearer by creating filled and open points (HIIT-filled points, EDU-open points). The mean labels are  moved to avoid collisions. We also replaced hard-coded texts with complete case data and set a fixed random seed. The seed iterations so that any automatic label placement is identical each time the code is run. This allows the figure to be reproduced exactly across different computers and runs.
+### Figure 4
+```{r figure-4}
+
+```
+
+
+### Improvement Figure 4
+```{r}
+
+```
 
 
 ### Figure 5
