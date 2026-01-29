@@ -296,7 +296,7 @@ fs_sum <- fs_long %>%
 ```
 
 
-```{r figure-4}
+```{r figure-4a}
 #Double Checking and Fixing Mean Calculations 
 fs_sum %>% arrange(time, group) %>% select(group, time, n, mean, sd)
 
