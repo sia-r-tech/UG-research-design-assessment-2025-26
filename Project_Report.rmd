@@ -163,6 +163,9 @@ mean_sd_imp <- mean_sd %>%
 mean_sd_labs_imp <- mean_sd_imp %>%
   mutate(time_num = as.numeric(time),
 
+    # horizontal separation for clarity
+    x_lab = time_num + if_else(group == "HIIT", -0.27, 0.30),
+
     # vertical separation
     y_lab = mean + if_else(group == "HIIT", 1.2, -1.2),
 
@@ -248,6 +251,8 @@ fig5_improved <- ggplot(mean_sd_imp,
 fig5_plot
 fig5_improved
 ```
+
+### Explanation of Figure 5 Improvements
 
 The new figure improves the interpretability of the results because it shows the differences between groups more clearly. Manually separating the text labels and having filled and unfilled points makes it easier to distinguish between the two groups. Separating the SD bars also makes clearer which SD bar belongs to which group. The clear title subtitle and y axis label also add context to the figure and specify exactly what is the outcome being compared and for what timeline. We added the percentage change from baseline in parenthesis to give context to the paper's conclusion that physical health remained relatively unchanged in both groups following the intervention.
 
