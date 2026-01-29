@@ -220,7 +220,7 @@ The original stacked bar format made it difficult to directly compare depression
 ```{r figure-4}
 # Write your code for reproducing, and then improving Figure 4. Present both figures together. Under the figures, explain how you've improved Figure 3 and why you consider this an improvement.
 
-install.packages(c("tidyverse", "readxl", "janitor", "dplyr", "ggrepel"))
+#install.packages(c("tidyverse", "readxl", "janitor", "dplyr", "ggrepel"))
 
 library(tidyverse)
 library(readxl)
@@ -296,7 +296,7 @@ fs_sum <- fs_long %>%
 ```
 
 
-```{r figure-4a}
+```{r}
 #Double Checking and Fixing Mean Calculations 
 fs_sum %>% arrange(time, group) %>% select(group, time, n, mean, sd)
 
