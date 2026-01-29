@@ -35,8 +35,224 @@ NOTE: Please don't edit this template directly. Use `File` > `Save as` to create
 ### Figure 5
 ```{r figure-5}
 # Write your code for reproducing, and then improving Figure 5. Present both figures together. Under the figures, explain how you've improved Figure 5 and why you consider this an improvement.
+
+library(here)
+library(readr)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(janitor)
+
+# Load and clean the dataset
+data_path <- here("data", "HIIT-postpartum-depression.csv")
+
+data <- read_csv(data_path, na = c("", "NA", "#NULL!"), show_col_types = FALSE) %>%
+  clean_names()
+
+# Select relevant variables and define intervention groups
+fig5_by_group <- data %>%
+  mutate(group = case_when(
+      intervention_group == 1 ~ "HIIT",
+      intervention_group == 2 ~ "EDU",
+      TRUE ~ NA_character_),
+    group = factor(group, levels = c("HIIT", "EDU"))) %>%
+  transmute(group,
+    pre_pcs = as.numeric(pre_sf_12_pcs_physicalhealthscale),
+    post_pcs = as.numeric(post_sf12_pcs),
+    postnatal_pcs = as.numeric(postnatal_sf_12_pcs)) %>%
+  filter(!is.na(group)) %>% 
+  filter(complete.cases(pre_pcs, post_pcs, postnatal_pcs))
+
+# Reshape data to long format to plot at the different time points
+fig5_long <- fig5_by_group %>%
+  pivot_longer(cols = c(pre_pcs, post_pcs, postnatal_pcs),
+    names_to = "time",
+    values_to = "pcs") %>%
+  mutate(time = factor(
+    time,
+    levels = c("pre_pcs", "post_pcs", "postnatal_pcs"),
+    labels = c(
+      "Before the intervention\n(II trimester of pregnancy)",
+      "After the intervention\n(III trimester of pregnancy)",
+      "Follow-up\n(± 5 months postpartum)"))
+  )
+
+# Calculate mean and standard deviation for each group and time point
+mean_sd <- fig5_long %>%
+  group_by(group, time) %>%
+  summarise(mean = mean(pcs), sd = sd(pcs), n = n(), .groups = "drop")
+
+# Adjust the label positions to match the original figure
+mean_sd_labs <- mean_sd %>%
+  mutate(time_num = as.numeric(time),
+    x_lab = case_when(
+      time_num %in% c(1, 2) ~ time_num - 0.23, # to the left of SD line
+      time_num == 3 ~ time_num + 0.23), # to the right of SD line
+    y_shift = case_when(time_num == 2 ~ 2.6, TRUE ~ 1.8), 
+    # Default label placement: HIIT above, EDU below
+    y_lab_default = mean + ifelse(group == "HIIT", y_shift, -y_shift), 
+    # Before intervention: swap label positions to replicate the original graph
+    y_lab = ifelse(
+      time_num == 1, 
+      mean + ifelse(group == "HIIT", -y_shift, y_shift), 
+      y_lab_default ), 
+    label = sprintf("M = %.2f", mean)
+  )
+
+
+# Create Figure 5 to match the style and look of the original
+fig5_plot <- ggplot(
+  mean_sd,
+  aes(x = time, y = mean, group = group, linetype = group)) +
+  geom_errorbar(
+    aes(ymin = mean - sd, ymax = mean + sd),
+    width = 0.04,
+    colour = "grey40",
+    linewidth = 0.50,
+    alpha = 0.75,
+    linetype = "solid") +
+  geom_line(colour = "black", linewidth = 0.7) +
+  geom_text(data = mean_sd_labs,
+    aes(x = x_lab, y = y_lab, label = label),
+    size = 3) +
+  scale_linetype_manual(
+    values = c("HIIT" = "solid", "EDU" = "11"),
+    labels = c(
+      "HIIT - High Intensity Interval Training Group",
+      "EDU - Educational Intervention Group")) +
+  scale_y_continuous(
+    limits = c(35, 60),
+    breaks = c(35, 40, 45, 50, 55, 60),
+    labels = function(x) sprintf("%.2f", x),
+    expand = c(0, 0)) +
+  labs(x = NULL, y = NULL,
+    linetype = expression( bold("Physical health") * " " * italic("(measured with the Short Form Health Survey - physical subscale)")),
+    caption = "FIGURE 5  Between-group differences in physical health. Note. The figure shows standard deviation (SD) bars.") +
+  theme_classic(base_size = 12) +
+  theme(
+    legend.position = "bottom",
+    legend.box = "vertical",
+    panel.border = element_rect(colour = "grey60", linewidth = 0.8),
+    axis.ticks = element_blank(),
+    axis.text.x = element_text(margin = margin(t = 8)),
+    panel.grid.major.y = element_line(colour = "grey85", linewidth = 0.6),
+    legend.title = element_text(margin = margin(b = 6)),
+    legend.box.margin = margin(t = 6)) +
+  guides(linetype = guide_legend(
+  title.position = "top",
+  title.hjust = 0.5,
+  nrow = 2, byrow = TRUE)
+  )
 ```
 
+### Improved Figure 5
+
+```{r}
+# dodge so SD bars don't overlap
+pd_5 <- position_dodge(width = 0.20)
+
+# Add percentage changes
+mean_sd_imp <- mean_sd %>%
+  group_by(group) %>%
+  mutate(
+    baseline_mean = mean[as.numeric(time) == 1],
+    pct_change = 100 * (mean - baseline_mean) / baseline_mean) %>%
+  ungroup()
+
+# Rebuild label table with new label text
+mean_sd_labs_imp <- mean_sd_imp %>%
+  mutate(time_num = as.numeric(time),
+
+    # horizontal separation for clarity
+    x_lab = time_num + if_else(group == "HIIT", -0.27, 0.30),
+
+    # vertical separation
+    y_lab = mean + if_else(group == "HIIT", 1.2, -1.2),
+
+    # Label text
+    label = sprintf("%s (%.1f%%): %.2f", group, pct_change, mean))
+
+# Improved plot: better title and legend style and percentage change
+fig5_improved <- ggplot(mean_sd_imp,
+  aes(x = time, y = mean, group = group, linetype = group)) +
+  geom_errorbar(
+    aes(ymin = mean - sd, ymax = mean + sd),
+    width = 0.08,
+    colour = "grey60",
+    linewidth = 0.65,
+    alpha = 0.75,
+    linetype = "solid",
+    position = pd_5) +
+  geom_line(colour = "black", linewidth = 0.7, position = pd_5) +
+  geom_point(
+    aes(fill = group),
+    position = pd_5,
+    size = 2.6,
+    shape = 21,
+    colour = "black",
+    stroke = 0.6) +
+  scale_fill_manual(
+    values = c("HIIT" = "black", "EDU" = "white"),
+    guide = "none") +
+  geom_text(
+    data = mean_sd_labs_imp,
+    aes(x = x_lab, y = y_lab, label = label),
+    size = 3) +
+  # Linetypes and legend text
+  scale_linetype_manual(
+    values = c("HIIT" = "solid", "EDU" = "11"),
+    breaks = c("HIIT", "EDU"),
+    labels = c(
+      "HIIT - High Intensity Interval Training Group (filled points)",
+      "EDU - Educational Intervention Group (open points)")) +
+
+  scale_y_continuous(
+    limits = c(35, 60),
+    breaks = c(35, 40, 45, 50, 55, 60),
+    labels = function(x) sprintf("%.2f", x),
+    expand = c(0, 0)) +
+  labs(
+    title = "FIGURE 5  Between-group differences in physical health",
+    subtitle = "Measured with the Short Form Health Survey (physical subscale) across pregnancy and postpartum",
+    x = NULL,
+    y = "Physical health score\n(higher = better physical functioning)",
+    linetype = NULL,
+    caption = "Note. Values in parentheses indicate percentage change from before the intervention.") +
+  theme_classic(base_size = 12) +
+  theme(
+    plot.title = element_text(face = "bold", hjust = 0),
+    plot.subtitle = element_text(size = 10, hjust = 0, margin = margin(b = 8)),
+    plot.title.position = "plot",
+    legend.position = "bottom",
+    legend.box = "vertical",
+    panel.border = element_rect(colour = "grey60", linewidth = 0.8),
+    axis.ticks = element_blank(),
+    axis.text.x = element_text(margin = margin(t = 8)),
+    panel.grid.major.y = element_line(colour = "grey85", linewidth = 0.6),
+
+    legend.title = element_text(margin = margin(b = 6)),
+    legend.box.margin = margin(t = 6),
+    plot.caption = element_text(hjust = 0, margin = margin(t = 8))) +
+
+  # Show points in the legend
+  guides(
+    linetype = guide_legend(
+      title.position = "top",
+      title.hjust = 0.5,
+      nrow = 2,
+      byrow = TRUE,
+      override.aes = list(
+        shape = 21,
+        fill = c("black", "white"),
+        colour = "black",
+        size = 3))
+  )
+
+fig5_plot
+fig5_improved
+```
+
+The new figure improves the interpretability of the results because it shows the differences between groups more clearly. Manually separating the text labels and having filled and unfilled points makes it easier to distinguish between the two groups. Separating the SD bars also makes clearer which SD bar belongs to which group. The clear title subtitle and y axis label also add context to the figure and specify exactly what is the outcome being compared and for what timeline. We added the percentage change from baseline in parenthesis to give context to the paper's conclusion that physical health remained relatively unchanged in both groups following the intervention.
 
 ## Task 2: FAIR data principles
 
