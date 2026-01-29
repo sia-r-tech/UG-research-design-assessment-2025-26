@@ -2,11 +2,13 @@
 title: "Group project assessment [template]"
 author: '[update with group members'' exam numbers]'
 date: "`r Sys.Date()`"
-output: html_document
+output:
+  html_document:
+    code_folding: hide
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 ```
 
 NOTE: Please don't edit this template directly. Use `File` > `Save as` to create a copy of this document, rename it (remove the word "template" from the file name) and use that new version to write your report. Make sure to also update the Title and Author fields in the YAML of your .Rmd file.
@@ -210,10 +212,11 @@ improved_plot <- ggplot(fig3_faceted, aes(x = category_short, y = percentage, fi
   )
 
 # Display
-plot_original
 improved_plot
 ```
+
 ### Explanation of improvements
+
 The original stacked bar format made it difficult to directly compare depression severity between the HIIT and EDU (control) groups and lacked error bars. We switched to a vertical bar chart split by depression levels for easier comparison between groups and faceted the plots so the differences in the clinical range can be viewed more easily. Wilson scores (95 confidence intervals) were added as error bars due to low sample size to show the reliability of the percentages. Exact percentage labels and sample numbers were added to eliminate guessing.
 
 ### Figure 4
