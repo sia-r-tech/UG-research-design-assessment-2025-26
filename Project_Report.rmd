@@ -163,9 +163,6 @@ mean_sd_imp <- mean_sd %>%
 mean_sd_labs_imp <- mean_sd_imp %>%
   mutate(time_num = as.numeric(time),
 
-    # horizontal separation for clarity
-    x_lab = time_num + if_else(group == "HIIT", -0.27, 0.30),
-
     # vertical separation
     y_lab = mean + if_else(group == "HIIT", 1.2, -1.2),
 
