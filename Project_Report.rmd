@@ -205,12 +205,11 @@ p <- ggplot(fs_sum, aes(x = time, y = mean, group = group, linetype = group)) +
     panel.border = element_rect(colour = "grey60", linewidth = 0.8)
   )
 
-p
-
+P
 ```
 
 
-### Improvement Figure 4
+###Improvement Figure 4
 
 ```{r}
 library(grid)
@@ -281,6 +280,7 @@ p <- ggplot(fs_sum, aes(x = time, y = mean, group = group, linetype = group)) +
   guides(linetype = guide_legend(nrow = 1, byrow = TRUE))
 
 p
+
 ```
 ## Explanation of Improvements 
 The improved graph is easier to read and more reproducible. The two groups are now slightly separated at each time point, preventing the standard deviation (SD) error bars from overlapping. This makes it easier to interpret. Mean labels are also positioned more consistently, reducing visual clutter. Duplicated calculations and hard-coded text have been removed and replaced with complete case data. In addition, setting a fixed random seed ensures that any automatic label placement is identical each time the code is ran. This allows the figure to be reproduced exactly across different computers and runs.
