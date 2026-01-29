@@ -582,9 +582,6 @@ fs_sum <- fs_long %>%
     label = sprintf("M = %.2f", mean)
   )
 ```
-### Explanation of improvements
-
-The original stacked bar format made it difficult to directly compare depression severity between the HIIT and EDU (control) groups and lacked error bars. We switched to a vertical bar chart split by depression levels for easier comparison between groups and faceted the plots so the differences in the clinical range can be viewed more easily. Wilson scores (95 confidence intervals) were added as error bars due to low sample size to show the reliability of the percentages. Exact percentage labels and sample numbers were added to eliminate guessing.
 
 ```{r figure-4-plot}
 fs_sum <- fs_sum %>%
@@ -789,23 +786,12 @@ fig4_imp <- ggplot(fs_sum, aes(x = time, y = mean, group = group, linetype = gro
   )
 )
 
-fig4
 fig4_imp
 ```
 
 ## Explanation of Improvements 
+
 The new graph improves readability by dodging the two groups slightly using the "position_dodge" function. By doing this, it prevents the standard deviation error bars from overlapping, making interpretation easier. We also made the group identity clearer by creating filled and open points (HIIT-filled points, EDU-open points). The mean labels are  moved to avoid collisions. We also replaced hard-coded texts with complete case data and set a fixed random seed. The seed iterations so that any automatic label placement is identical each time the code is run. This allows the figure to be reproduced exactly across different computers and runs.
-### Figure 4
-```{r figure-4}
-
-```
-
-
-### Improvement Figure 4
-```{r}
-
-```
-
 
 ### Figure 5
 ```{r figure-5}
