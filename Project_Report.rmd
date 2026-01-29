@@ -503,7 +503,7 @@ fig4_imp
 ```
 
 ## Explanation of Improvements 
-The improved graph is easier to read and more reproducible. The two groups are now slightly separated at each time point, preventing the standard deviation (SD) error bars from overlapping. This makes it easier to interpret. Mean labels are also positioned more consistently, reducing visual clutter. Duplicated calculations and hard-coded text have been removed and replaced with complete case data. In addition, setting a fixed random seed ensures that any automatic label placement is identical each time the code is ran. This allows the figure to be reproduced exactly across different computers and runs.
+The new graph improves readability by dodging the two groups slightly using the "position_dodge" function. By doing this, it prevents the standard deviation error bars from overlapping, making interpretation easier. We also made the group identity clearer by creating filled and open points (HIIT-filled points, EDU-open points). The mean labels are  moved to avoid collisions. We also replaced hard-coded texts with complete case data and set a fixed random seed. The seed iterations so that any automatic label placement is identical each time the code is run. This allows the figure to be reproduced exactly across different computers and runs.
 
 
 ### Figure 5
