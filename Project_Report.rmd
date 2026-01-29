@@ -225,18 +225,10 @@ The original stacked bar format made it difficult to directly compare depression
 ```
 
 
-```{r}
-
-```
-
-
 ### Improvement Figure 4
-
 ```{r}
 
 ```
-## Explanation of Improvements 
-The improved graph is easier to read and more reproducible. The two groups are now slightly separated at each time point, preventing the standard deviation (SD) error bars from overlapping. This makes it easier to interpret. Mean labels are also positioned more consistently, reducing visual clutter. Duplicated calculations and hard-coded text have been removed and replaced with complete case data. In addition, setting a fixed random seed ensures that any automatic label placement is identical each time the code is ran. This allows the figure to be reproduced exactly across different computers and runs.
 
 
 ### Figure 5
