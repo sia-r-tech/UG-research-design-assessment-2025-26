@@ -104,8 +104,9 @@ plot_original <- ggplot(fig3_data, aes(x = group_label, y = percentage, fill = c
 plot_original
 ```
 
-### Improved Plot:
+### Improvement Figure 3:
 ```{r}
+plot_original
 # PREPARE DATA
 fig3_faceted <- fig3_data %>%
   # Create short Group Names
@@ -212,8 +213,8 @@ improved_plot <- ggplot(fig3_faceted, aes(x = category_short, y = percentage, fi
 # Display
 improved_plot
 ```
-
-The original stacked bar format made it difficult to directly compare depression severity between the HIIT and EDU (control) groups and lacked error bars. We switched to a vertical bar chart split by depression levels for easier comparison between groups and faceted the plots so the differences in the clinical range can be viewed more easily. Wilson scores (95 confidence intervals) were added as error bars due to low sample size to show the reliability of the percentages. Exact percentage labels and sample numbers were added to eliminate guessing. 
+### Explanation of improvements
+The original stacked bar format made it difficult to directly compare depression severity between the HIIT and EDU (control) groups and lacked error bars. We switched to a vertical bar chart split by depression levels for easier comparison between groups and faceted the plots so the differences in the clinical range can be viewed more easily. Wilson scores (95 confidence intervals) were added as error bars due to low sample size to show the reliability of the percentages. Exact percentage labels and sample numbers were added to eliminate guessing.
 
 ### Figure 4
 ```{r figure-4}
