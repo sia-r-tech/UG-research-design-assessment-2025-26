@@ -40,4 +40,11 @@ NOTE: Please don't edit this template directly. Use `File` > `Save as` to create
 
 ## Task 2: FAIR data principles
 
+The dataset meets several aspects of the FAIR data principles. First of all, it is publicly available via Mendeley Data. It is in a recognised repository and has been assigned a DOI, which means that it can be easily found. The title of the dataset matches the publication which also contributes to its findability. However, this could be further improved by adding information that contains keywords and descriptions that make it easier to find.
+In terms of accessibility the dataset is openly accessible and doesn’t have any restrictions or proprietary software. Additionally, since it has a DOI it will likely be accessible for a relatively long time. A way in which it could be improved is to include a clear licence statement that tells the reader about reuse rights. Furthermore, a README that gives information on how to download the data would be useful.
+Looking at interoperability, the data is in a standard table format, which means that it is compatible with most computer software. However, a weakness is that there is no standardized vocabulary and the names of the variables aren’t always clear. By managing this, it would become easier to integrate into other datasets and allow for further analysis.
+An aspect that could be improved is the reusability of the dataset. More specifically, although it is present in a peer-reviewed paper it doesn’t have detailed instructions on how it was or can be used. This makes it difficult for researchers to investigate the dataset and reproduce the analysis. This could be improved by giving clear guidance or code examples that show how the data was processed and analysed.
+Overall, although there are strengths in the dataset’s findability and accessibility, there is a need for better standardization and documentation that would significantly strengthen its FAIR-ness and add to its value. 
+
+
 ## Task 3: Reproducibility brief
