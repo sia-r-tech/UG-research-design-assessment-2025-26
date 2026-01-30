@@ -1,6 +1,6 @@
 ---
 title: "Group project assessment"
-author: '[update with group members'' exam numbers]'
+author: 'Exam Nos: B247222, B218357, B249236'
 date: "`r Sys.Date()`"
 output: html_document
 ---
@@ -68,13 +68,11 @@ fig5_long <- fig5_by_group %>%
   pivot_longer(cols = c(pre_pcs, post_pcs, postnatal_pcs),
     names_to = "time",
     values_to = "pcs") %>%
-  mutate(time = factor(
-    time,
+  mutate(time = factor(time,
     levels = c("pre_pcs", "post_pcs", "postnatal_pcs"),
-    labels = c(
-      "Before the intervention\n(II trimester of pregnancy)",
-      "After the intervention\n(III trimester of pregnancy)",
-      "Follow-up\n(± 5 months postpartum)"))
+    labels = c("Before the intervention\n(II trimester of pregnancy)",
+               "After the intervention\n(III trimester of pregnancy)",
+               "Follow-up\n(± 5 months postpartum)"))
   )
 
 # Calculate mean and standard deviation for each group and time point
@@ -104,8 +102,7 @@ mean_sd_labs <- mean_sd %>%
 fig5_plot <- ggplot(
   mean_sd,
   aes(x = time, y = mean, group = group, linetype = group)) +
-  geom_errorbar(
-    aes(ymin = mean - sd, ymax = mean + sd),
+  geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd),
     width = 0.04,
     colour = "grey40",
     linewidth = 0.50,
@@ -115,11 +112,9 @@ fig5_plot <- ggplot(
   geom_text(data = mean_sd_labs,
     aes(x = x_lab, y = y_lab, label = label),
     size = 3) +
-  scale_linetype_manual(
-    values = c("HIIT" = "solid", "EDU" = "11"),
-    labels = c(
-      "HIIT - High Intensity Interval Training Group",
-      "EDU - Educational Intervention Group")) +
+  scale_linetype_manual(values = c("HIIT" = "solid", "EDU" = "11"),
+    labels = c("HIIT - High Intensity Interval Training Group",
+               "EDU - Educational Intervention Group")) +
   scale_y_continuous(
     limits = c(35, 60),
     breaks = c(35, 40, 45, 50, 55, 60),
@@ -143,11 +138,13 @@ fig5_plot <- ggplot(
   title.hjust = 0.5,
   nrow = 2, byrow = TRUE)
   )
+
+fig5_plot
 ```
 
 ### Improved Figure 5
 
-```{r}
+```{r figure-5-improved}
 # dodge so SD bars don't overlap
 pd_5 <- position_dodge(width = 0.20)
 
@@ -162,21 +159,17 @@ mean_sd_imp <- mean_sd %>%
 # Rebuild label table with new label text
 mean_sd_labs_imp <- mean_sd_imp %>%
   mutate(time_num = as.numeric(time),
-
     # horizontal separation for clarity
     x_lab = time_num + if_else(group == "HIIT", -0.27, 0.30),
-
     # vertical separation
     y_lab = mean + if_else(group == "HIIT", 1.2, -1.2),
-
     # Label text
     label = sprintf("%s (%.1f%%): %.2f", group, pct_change, mean))
 
 # Improved plot: better title and legend style and percentage change
 fig5_improved <- ggplot(mean_sd_imp,
   aes(x = time, y = mean, group = group, linetype = group)) +
-  geom_errorbar(
-    aes(ymin = mean - sd, ymax = mean + sd),
+  geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd),
     width = 0.08,
     colour = "grey60",
     linewidth = 0.65,
@@ -184,38 +177,28 @@ fig5_improved <- ggplot(mean_sd_imp,
     linetype = "solid",
     position = pd_5) +
   geom_line(colour = "black", linewidth = 0.7, position = pd_5) +
-  geom_point(
-    aes(fill = group),
+  geom_point(aes(fill = group),
     position = pd_5,
     size = 2.6,
     shape = 21,
     colour = "black",
     stroke = 0.6) +
-  scale_fill_manual(
-    values = c("HIIT" = "black", "EDU" = "white"),
-    guide = "none") +
-  geom_text(
-    data = mean_sd_labs_imp,
-    aes(x = x_lab, y = y_lab, label = label),
-    size = 3) +
+  scale_fill_manual(values = c("HIIT" = "black", "EDU" = "white"), guide = "none") +
+  geom_text(data = mean_sd_labs_imp, aes(x = x_lab, y = y_lab, label = label),
+            size = 3) +
   # Linetypes and legend text
-  scale_linetype_manual(
-    values = c("HIIT" = "solid", "EDU" = "11"),
+  scale_linetype_manual(values = c("HIIT" = "solid", "EDU" = "11"),
     breaks = c("HIIT", "EDU"),
-    labels = c(
-      "HIIT - High Intensity Interval Training Group (filled points)",
+    labels = c("HIIT - High Intensity Interval Training Group (filled points)",
       "EDU - Educational Intervention Group (open points)")) +
-
-  scale_y_continuous(
-    limits = c(35, 60),
+  scale_y_continuous(limits = c(35, 60),
     breaks = c(35, 40, 45, 50, 55, 60),
     labels = function(x) sprintf("%.2f", x),
     expand = c(0, 0)) +
-  labs(
-    title = "FIGURE 5  Between-group differences in physical health",
-    subtitle = "Measured with the Short Form Health Survey (physical subscale) across pregnancy and postpartum",
+  labs(title = "FIGURE 5 Between-group differences in Physical Health",
+    subtitle = "Measured with the Short Form Health Survey (physical subscale) before and after intervention and on follow-up",
     x = NULL,
-    y = "Physical health score\n(higher = better physical functioning)",
+    y = "Physical health score\n(higher = better physical health)",
     linetype = NULL,
     caption = "Note. Values in parentheses indicate percentage change from before the intervention.") +
   theme_classic(base_size = 12) +
@@ -229,32 +212,28 @@ fig5_improved <- ggplot(mean_sd_imp,
     axis.ticks = element_blank(),
     axis.text.x = element_text(margin = margin(t = 8)),
     panel.grid.major.y = element_line(colour = "grey85", linewidth = 0.6),
-
     legend.title = element_text(margin = margin(b = 6)),
     legend.box.margin = margin(t = 6),
     plot.caption = element_text(hjust = 0, margin = margin(t = 8))) +
-
   # Show points in the legend
-  guides(
-    linetype = guide_legend(
-      title.position = "top",
-      title.hjust = 0.5,
-      nrow = 2,
-      byrow = TRUE,
-      override.aes = list(
-        shape = 21,
-        fill = c("black", "white"),
-        colour = "black",
-        size = 3))
+  guides(linetype = guide_legend(title.position = "top",
+                                 title.hjust = 0.5,
+                                 nrow = 2,
+                                 byrow = TRUE,
+                                 override.aes = list(
+                                   shape = 21,
+                                   fill = c("black", "white"),
+                                   colour = "black",
+                                   size = 3))
   )
 
-fig5_plot
+
 fig5_improved
 ```
 
 ### Explanation of Figure 5 Improvements
 
-The new figure improves the interpretability of the results because it shows the differences between groups more clearly. Manually separating the text labels and having filled and unfilled points makes it easier to distinguish between the two groups. Separating the SD bars also makes clearer which SD bar belongs to which group. The clear title subtitle and y axis label also add context to the figure and specify exactly what is the outcome being compared and for what timeline. We added the percentage change from baseline in parenthesis to give context to the paper's conclusion that physical health remained relatively unchanged in both groups following the intervention.
+The new figure improves the interpretability of the results because it shows the differences between groups more clearly. Manually separating the text labels and having filled and unfilled points makes it easier to distinguish between the two groups. Separating the SD bars also makes explicit which SD bar belongs to which group. The clear title subtitle and y axis label also add context to the figure and specify exactly what is the outcome being compared and for what timeline. We added the percentage change from baseline in parenthesis to give context to the paper's conclusion that physical health remained relatively unchanged in both groups following the intervention.
 
 ## Task 2: FAIR data principles
 
