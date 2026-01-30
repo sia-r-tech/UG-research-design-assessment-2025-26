@@ -509,6 +509,111 @@ fig4_imp
 
 The new graph improves readability by dodging the two groups slightly using the "position_dodge" function. By doing this, it prevents the standard deviation error bars from overlapping, making interpretation easier. We also made the group identity clearer by creating filled and open points (HIIT-filled points, EDU-open points). The mean labels are  moved to avoid collisions. We also replaced hard-coded texts with complete case data and set a fixed random seed. The seed iterations so that any automatic label placement is identical each time the code is run. This allows the figure to be reproduced exactly across different computers and runs.
 
+### Figure 5
+```{r figure-5}
+# Write your code for reproducing, and then improving Figure 5. Present both figures together. Under the figures, explain how you've improved Figure 5 and why you consider this an improvement.
+
+library(here)
+library(readr)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(janitor)
+
+# Load and clean the dataset
+data_path <- here("data", "HIIT-postpartum-depression.csv")
+
+data <- read_csv(data_path, na = c("", "NA", "#NULL!"), show_col_types = FALSE) %>%
+  clean_names()
+
+# Select relevant variables and define intervention groups
+fig5_by_group <- data %>%
+  mutate(group = case_when(
+      intervention_group == 1 ~ "HIIT",
+      intervention_group == 2 ~ "EDU",
+      TRUE ~ NA_character_),
+    group = factor(group, levels = c("HIIT", "EDU"))) %>%
+  transmute(group,
+    pre_pcs = as.numeric(pre_sf_12_pcs_physicalhealthscale),
+    post_pcs = as.numeric(post_sf12_pcs),
+    postnatal_pcs = as.numeric(postnatal_sf_12_pcs)) %>%
+  filter(!is.na(group)) %>% 
+  filter(complete.cases(pre_pcs, post_pcs, postnatal_pcs))
+
+# Reshape data to long format to plot at the different time points
+fig5_long <- fig5_by_group %>%
+  pivot_longer(cols = c(pre_pcs, post_pcs, postnatal_pcs),
+    names_to = "time",
+    values_to = "pcs") %>%
+  mutate(time = factor(time,
+    levels = c("pre_pcs", "post_pcs", "postnatal_pcs"),
+    labels = c("Before the intervention\n(II trimester of pregnancy)",
+               "After the intervention\n(III trimester of pregnancy)",
+               "Follow-up\n(± 5 months postpartum)"))
+  )
+
+# Calculate mean and standard deviation for each group and time point
+mean_sd <- fig5_long %>%
+  group_by(group, time) %>%
+  summarise(mean = mean(pcs), sd = sd(pcs), .groups = "drop")
+
+# Adjust the label positions to match the original figure
+mean_sd_labs <- mean_sd %>%
+  mutate(time_num = as.numeric(time),
+    x_lab = case_when(
+      time_num %in% c(1, 2) ~ time_num - 0.23, # to the left of SD line
+      time_num == 3 ~ time_num + 0.23), # to the right of SD line
+    y_shift = case_when(time_num == 2 ~ 2.6, TRUE ~ 1.8), 
+    # Default label placement: HIIT above, EDU below
+    y_lab_default = mean + ifelse(group == "HIIT", y_shift, -y_shift), 
+    # Before intervention: swap label positions to replicate the original graph
+    y_lab = ifelse(
+      time_num == 1, 
+      mean + ifelse(group == "HIIT", -y_shift, y_shift), 
+      y_lab_default), 
+    label = sprintf("M = %.2f", mean)
+  )
+
+# Create Figure 5 to match the style and look of the original
+fig5_plot <- ggplot(mean_sd,
+                    aes(x = time, y = mean, group = group, linetype = group)) +
+  geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd),
+    width = 0.04,
+    colour = "grey40",
+    linewidth = 0.50,
+    alpha = 0.75,
+    linetype = "solid") +
+  geom_line(colour = "black", linewidth = 0.7) +
+  geom_text(data = mean_sd_labs, aes(x = x_lab, y = y_lab, label = label), size = 3) +
+  scale_linetype_manual(values = c("HIIT" = "solid", "EDU" = "11"),
+    labels = c("HIIT - High Intensity Interval Training Group",
+               "EDU - Educational Intervention Group")) +
+  scale_y_continuous(limits = c(35, 60),
+    breaks = c(35, 40, 45, 50, 55, 60),
+    labels = function(x) sprintf("%.2f", x),
+    expand = c(0, 0)) +
+  labs(x = NULL, y = NULL,
+    linetype = expression( bold("Physical health") * " " * italic("(measured with the Short Form Health Survey - physical subscale)")),
+    caption = "FIGURE 5  Between-group differences in physical health. Note. The figure shows standard deviation (SD) bars.") +
+  theme_classic(base_size = 12) +
+  theme(
+    legend.position = "bottom",
+    legend.box = "vertical",
+    panel.border = element_rect(colour = "grey60", linewidth = 0.8),
+    axis.ticks = element_blank(),
+    axis.text.x = element_text(margin = margin(t = 8)),
+    panel.grid.major.y = element_line(colour = "grey85", linewidth = 0.6),
+    legend.title = element_text(margin = margin(b = 6)),
+    legend.box.margin = margin(t = 6)) +
+  guides(linetype = guide_legend(
+  title.position = "top",
+  title.hjust = 0.5,
+  nrow = 2, byrow = TRUE)
+  )
+
+fig5_plot
+```
+
 ### Improved Figure 5
 
 ```{r figure-5-improved}
@@ -518,9 +623,8 @@ pd_5 <- position_dodge(width = 0.20)
 # Add percentage changes
 mean_sd_imp <- mean_sd %>%
   group_by(group) %>%
-  mutate(
-    baseline_mean = mean[as.numeric(time) == 1],
-    pct_change = 100 * (mean - baseline_mean) / baseline_mean) %>%
+  mutate(baseline_mean = mean[as.numeric(time) == 1],
+         pct_change = 100 * (mean - baseline_mean) / baseline_mean) %>%
   ungroup()
 
 # Rebuild label table with new label text
