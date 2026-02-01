@@ -103,7 +103,7 @@ plot_original
 ```
 
 ### Improved Figure 3
-```{r}
+```{r figure-3-improved}
 # PREPARE DATA
 fig3_faceted <- fig3_data %>%
   # Create short Group Names
@@ -676,19 +676,24 @@ The new figure improves the interpretability of the results because it shows the
 
 ## Task 2: FAIR data principles
 
-The dataset meets several aspects of the FAIR data principles. First of all, it is publicly available via Mendeley Data. It is in a recognised repository and has been assigned a DOI, which means that it can be easily found. The title of the dataset matches the publication which also contributes to its findability. However, this could be further improved by adding information that contains keywords and descriptions that make it easier to find.
-In terms of accessibility the dataset is openly accessible and doesn’t have any restrictions or proprietary software. Additionally, since it has a DOI it will likely be accessible for a relatively long time. A way in which it could be improved is to include a clear licence statement that tells the reader about reuse rights. Furthermore, a README that gives information on how to download the data would be useful.
-Looking at interoperability, the data is in a standard table format, which means that it is compatible with most computer software. However, a weakness is that there is no standardized vocabulary and the names of the variables aren’t always clear. By managing this, it would become easier to integrate into other datasets and allow for further analysis.
-An aspect that could be improved is the reusability of the dataset. More specifically, although it is present in a peer-reviewed paper it doesn’t have detailed instructions on how it was or can be used. This makes it difficult for researchers to investigate the dataset and reproduce the analysis. This could be improved by giving clear guidance or code examples that show how the data was processed and analysed.
-Overall, although there are strengths in the dataset’s findability and accessibility, there is a need for better standardization and documentation that would significantly strengthen its FAIR-ness and add to its value. 
+The dataset meets several aspects of the FAIR data principles. It is publicly available in a recognised repository (Mendeley Data) and has been assigned a persistent DOI, so it can be easily found and cited. The data has a description, a clear title and authors, and has been assigned to categories which add to its findability. However, there is limited metadata, particularly because there is no data dictionary that explains the variables. The dataset could therefore include variable-level descriptions on each column, with units and coding.
 
+In terms of accessibility, the dataset is openly accessible via a free and universally used protocol (https) and has no restrictions. Since the data is anonymised, an authentication procedure is not needed. Additionally, since it has a DOI, the metadata would remain accessible even if the data were removed. However, a description of how to access the data, given in Excel (proprietary format), would improve accessibility.
+
+Looking at interoperability, although the data is presented in a standard table format, it is given as an Excel file, which could limit its compatibility in some workflows. Additionally, variable names are unclear and not matched to standard vocabularies (e.g., for depression scores). By using a non-proprietary format (e.g., csv) and standardised terminology it would become easier to integrate into other datasets.
+
+The reusability of the dataset is strengthened by a clear licence, a brief description and linked publications. However, there is no documentation or instructions on how the data can be used. Including a codebook that describes each attribute of the data, or code examples that show how the data was processed and analysed in the publications, would improve reusability.
+
+Overall, while the data is open and easy to access, its FAIR-ness could be strengthened by using standardised variable names, variable-level metadata, and non-proprietary formats. 
 
 ## Task 3: Reproducibility brief
 
-The paper implements the persona of a consultant applying The Turing Way and moves beyond the “trust me” model (Begley & Ioannidis, 2015). Utilising Mendeley Data as the raw dataset, an open data source, enables all open research practices to reproduce the work. Registration on ClinicalTrials.gov, in addition to adhering to CONSORT guidelines, minimises research design waste and ensures replicability by providing clear instructions for others to follow. 
+Your study has some good aspects that make it reproducible. You have made your dataset publicly available in a trusted repository and linked it to published articles that use it. This means others can find and access the data to reproduce your work. You also describe the intervention, outcomes, and study design in detail, which makes your work easier to understand and gives a good idea of your workflow.
 
-The analysis was performed in IBM SPSS v27; however, these files are not published. The first recommendation would be to export and publish the SPSS Syntax files (.sps) to reduce cognitive bias. Without code, specific steps such as Intention-to-treat (ITT) analyses using linear interpolation cannot be audited for selective reporting (Begley & Ioannidis, 2015). This satisfies the requirement for Computational Reproducibility (Same Data, Same Analysis).
-Reliance on proprietary software (SPSS) creates a financial barrier for other researchers. Therefore, using open-source software, such as R or Python, for analysis allows for cost-free robustness checks. This ensures results are the same across different environments without requiring expensive licenses. This is important given that 83% of researchers found difficulty securing funding for replication studies (Cobey et al., 2024), making low-cost verification essential. Another benefit of this is waste reduction associated with inefficient research regulation and management.  
+However, your workflow still needs to be more transparent. Although the results can be understood from your descriptions, it would be difficult for someone to follow the exact steps you took in your analysis and get the same results. You could add a link to the code that you used to clean and analyse the data (for example in a GitHub repository). In this repo put any scripts you used, e.g., preprocessing, generating figures, and statistical analysis.
 
-The sample is composed exclusively of Caucasians, and variable coding is ambiguous without a dictionary. Therefore, providing a codebook or data dictionary would be useful. To create generalisability (Different Data, Different Analysis) in addition to equity, diversity and inclusion, future researchers need clear definitions to apply the workflow to diverse populations. Ambiguous methods prevent valid extension of research, contributing to the 85% of research investment that is wasted (MacLeod et al., 2014). 
-(283 words)
+Second, I would recommend documenting your variables more clearly. An option would be to add a README or a codebook that answers questions like: how were variables calculated, how did you handle missing data, which participants did you exclude? After this, you could add a short file that gives instructions on how to run your code so that it is easier to follow your workflow.
+
+I like how you specify which software environments and packages you used for the analysis and included the specific versions and parameters. However, instead of simply adding figures and brief notes as linked supplementary material, you could go into more detail on how you used each package (e.g., syntax for ITT) in a separate ‘instructions’ document and add which packages are required as an appendix.
+
+These changes would make it easier for others to go through your pipeline, perform the same analysis steps, and get the same results.
