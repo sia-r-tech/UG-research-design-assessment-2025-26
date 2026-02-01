@@ -1,6 +1,6 @@
 ---
-title: "Group project assessment [template]"
-author: '[update with group members'' exam numbers]'
+title: "Group project assessment"
+author: 'Exam Numbers: B247222, B218357, B249236'
 date: "`r Sys.Date()`"
 output:
   html_document:
@@ -11,13 +11,24 @@ output:
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 ```
 
-NOTE: Please don't edit this template directly. Use `File` > `Save as` to create a copy of this document, rename it (remove the word "template" from the file name) and use that new version to write your report. Make sure to also update the Title and Author fields in the YAML of your .Rmd file.
 
 ## Task 1: Reproducing and improving figures
 
 ```{r load-wrangle}
-# load and wrangle the data here
+# load packages needed for all figures
+library(tidyverse)
+library(janitor)
+library(here)
+library(ggrepel)
+library(grid)
 
+# Path to the dataset
+data_path <- here("data", "HIIT-postpartum-depression.csv")
+
+# Read the data
+data_raw <- read_csv(data_path, na = c("", "NA", "#NULL!"), 
+                     show_col_types = FALSE) %>%
+  clean_names()
 
 ```
 
@@ -25,21 +36,6 @@ NOTE: Please don't edit this template directly. Use `File` > `Save as` to create
 ### Figure 3
 ```{r figure-3}
 # Write your code for reproducing, and then improving Figure 3. Present both figures together. Under the figures, explain how you've improved Figure 3 and why you consider this an improvement.
-library(tidyverse)
-library(janitor)
-library(here) 
-
-# LOAD DATA 
-data_path <- here("data", "HIIT-postpartum-depression.csv")
-
-# Check if file exists 
-if (!file.exists(data_path)) {
-  stop("Error: R still can't find the file! Make sure you created a folder named 'data' and put the CSV inside it.")
-}
-
-# Read the data 
-data_raw <- read_csv(data_path, na = c("", "NA", "#NULL!")) %>%
-  clean_names()
 
 # PREPARE THE DATA FOR FIGURE 3
 fig3_data <- data_raw %>%
@@ -106,7 +102,7 @@ plot_original <- ggplot(fig3_data, aes(x = group_label, y = percentage, fill = c
 plot_original
 ```
 
-### Improvement Figure 3:
+### Improved Figure 3
 ```{r}
 # PREPARE DATA
 fig3_faceted <- fig3_data %>%
@@ -163,7 +159,7 @@ fig3_faceted <- fig3_data %>%
 improved_plot <- ggplot(fig3_faceted, aes(x = category_short, y = percentage, fill = group_short)) +
   
   # BARS
-  geom_col(position = position_dodge(width = 0.9), width = 0.8, color = "black", size = 0.3) +
+  geom_col(position = position_dodge(width = 0.9), width = 0.8, color = "black", linewidth = 0.3) +
   
   # ERROR BARS
   geom_errorbar(aes(ymin = ci_lower, ymax = ci_upper), 
@@ -192,7 +188,7 @@ improved_plot <- ggplot(fig3_faceted, aes(x = category_short, y = percentage, fi
   
   # TITLES
   labs(
-    title = "Postpartum Depression Severity by Group",
+    title = "Figure 3 Postpartum Depression Severity by Group",
     subtitle = "Faceted view highlights clinical differences (Note different Y-axis scales)",
     x = NULL, y = "Prevalence (%)", fill = "Group"
   ) +
@@ -200,6 +196,8 @@ improved_plot <- ggplot(fig3_faceted, aes(x = category_short, y = percentage, fi
   # THEME
   theme_bw(base_size = 12) +
   theme(
+    plot.title = element_text(face = "bold", hjust = 0),
+    plot.subtitle = element_text(size = 10, hjust = 0),
     legend.position = "top",
     legend.justification = "left",
     panel.grid.major.x = element_blank(),
@@ -223,24 +221,10 @@ The original stacked bar format made it difficult to directly compare depression
 ```{r figure-4-1}
 # Write your code for reproducing, and then improving Figure 4. Present both figures together. Under the figures, explain how you've improved Figure 3 and why you consider this an improvement.
 
+# Rename data
+HIIT_post <- data_raw
 
-library(tidyverse)
-library(readxl)
-library(janitor)
-library(dplyr)
-library(readr)
-library(here)
-library(ggrepel)
-
-
-HIIT_post <- readr::read_csv(
-  here::here("data", "HIIT-postpartum-depression.csv"),
-  na = c("", "NA", "#NULL!"),
-  show_col_types = FALSE
-) %>%
-  janitor::clean_names()
-
-
+# Keep only those with values for all three time points
 HIIT_complete <- HIIT_post %>%
   filter(
     !is.na(pre_fs_scale),
@@ -248,6 +232,7 @@ HIIT_complete <- HIIT_post %>%
     !is.na(postnatal_florishing_scale_score)
   )
 
+# Recode the groups, and set the time order
 fs_long <- HIIT_complete %>%
   mutate(
     group = case_when(
@@ -274,17 +259,8 @@ fs_long <- HIIT_complete %>%
     )
   )
 
-fs_sum <- fs_long %>%
-  group_by(group, time) %>%
-  summarise(
-    n = n(),
-    mean = mean(fs),
-    sd = sd(fs),
-    .groups = "drop"
-  )
 
-
-#Now computing Mean (M) and SD per group/time for figure 4 
+# Calculate means and SDs at each time point
 fs_sum <- fs_long %>%
   group_by(group, time) %>%
   summarise(
@@ -299,6 +275,7 @@ fs_sum <- fs_long %>%
 ```
 
 ```{r figure-4-plot}
+# Add small nudges to labels
 fs_sum <- fs_sum %>%
   mutate(label = sprintf("M = %.2f", mean)) %>%
   mutate(
@@ -320,7 +297,7 @@ fs_sum <- fs_sum %>%
     )
   )
 
-
+# Build the original plot
 fig4 <- ggplot(fs_sum, aes(x = time, y = mean, group = group, linetype = group)) +
 
   # SD error bars: grey + SOLID, not affected by group linetype
@@ -332,11 +309,11 @@ fig4 <- ggplot(fs_sum, aes(x = time, y = mean, group = group, linetype = group))
     alpha = 0.75,
     linetype = "solid"
   ) +
-
-  # Mean lines (black)
+  
+  # Mean lines
   geom_line(linewidth = 1.0, colour = "black") +
-
-  # Mean labels (custom x shift + vertical shift)
+  
+  # Mean labels (custom x shift and vertical shift)
   geom_text(
     aes(
       label = label,
@@ -346,20 +323,20 @@ fig4 <- ggplot(fs_sum, aes(x = time, y = mean, group = group, linetype = group))
     ),
     size = 3.2
   ) +
-
+  
   scale_linetype_manual(
     values = c("HIIT" = "solid", "EDU" = "11"),
     labels = c("HIIT" = "HIIT – High Intensity Interval Training Group",
                "EDU"  = "EDU – Educational Intervention Group")
   ) +
-
+  
   scale_y_continuous(
     limits = c(40, 60),
     breaks = seq(40, 60, 2),
     labels = function(x) sprintf("%.2f", x),
     expand = c(0, 0)
   ) +
-
+  
   labs(
     caption = paste("FIGURE 4  Between-group differences in psychological well-being. Note. The figure shows standard deviation (SD) bars."),
     x = expression(bold("Psychological well-being") * " " * italic("(measured with the Flourishing Scale)")),
@@ -387,23 +364,21 @@ fig4
 
 ```
 
-### Improvement Figure 4
+### Improved Figure 4
 ```{r figure-4-improved}
-library(grid)
-library(ggrepel)
-
+# Dodge to seperate HIIT and EDU so SD bars don't overlap
 pd <- position_dodge(width = 0.20)
 
 # Make labels group specific
 fs_sum <- fs_sum %>%
   mutate(
     label = paste0(group, ": ", sprintf("%.2f", mean)),
-
+    
     # Baseline: put EDU above HIIT
     label_y = case_when(
       grepl("^Before", time) & group == "HIIT" ~ 0.3,
       grepl("^Before", time) & group == "EDU"  ~ 0.5,
-
+      
       # keep the rest
       group == "HIIT" & grepl("^After", time)  ~ 0.5,
       group == "EDU"  & grepl("^After", time)  ~ 0.0,
@@ -412,7 +387,7 @@ fs_sum <- fs_sum %>%
     )
   )
 
-
+# Build the improved plot with dodged SD, points and lines and better group coding in legend
 fig4_imp <- ggplot(fs_sum, aes(x = time, y = mean, group = group, linetype = group)) +
   geom_errorbar(
     aes(ymin = mean - sd, ymax = mean + sd),
@@ -425,6 +400,7 @@ fig4_imp <- ggplot(fs_sum, aes(x = time, y = mean, group = group, linetype = gro
   geom_line(aes(linewidth = group), colour = "black", position = pd) +
   scale_linewidth_manual(values = c("HIIT" = 1.05, "EDU" = 0.9), guide = "none") +
   
+  # For points
   geom_point(
   aes(fill = group),
   position = pd,
@@ -437,22 +413,23 @@ fig4_imp <- ggplot(fs_sum, aes(x = time, y = mean, group = group, linetype = gro
   values = c("HIIT" = "black", "EDU" = "white"),
   guide = "none"   # we’ll control the legend manually below
   )+
-
+  
+  # Make group postions clearer
   geom_text(
   data = fs_sum %>% filter(group == "HIIT"),
   aes(x = time, y = mean + label_y, label = label),
   nudge_x = -0.27,
   size = 3.2
   ) +
-
+  
   geom_text(
   data = fs_sum %>% filter(group == "EDU"),
   aes(x = time, y = mean + label_y, label = label),
   nudge_x = 0.27,
   size = 3.2
   )+
-
-
+  
+  
   scale_linetype_manual(
   values = c("HIIT" = "solid", "EDU" = "11"),
   breaks = c("HIIT", "EDU"),
@@ -460,14 +437,16 @@ fig4_imp <- ggplot(fs_sum, aes(x = time, y = mean, group = group, linetype = gro
     "HIIT - High Intensity Interval Training Group (left; filled points)",
     "EDU - Educational Intervention Group (right; open points)")
   ) +
-
+  
+  # Narrower y axis
   scale_y_continuous(
     limits = c(40, 58),
     breaks = seq(40, 58, 2),
     labels = \(x) sprintf("%.2f", x),
     expand = expansion(mult = c(0, 0))
   ) +
-
+  
+  # Labs similar to Figure 5
   labs(
   title = "FIGURE 4  Between-group differences in psychological well-being",
   subtitle = "Measured with the Flourishing Scale across pregnancy and postpartum",
@@ -475,7 +454,8 @@ fig4_imp <- ggplot(fs_sum, aes(x = time, y = mean, group = group, linetype = gro
   y = "Flourishing Scale score\n(higher = better psychological well-being)",
   linetype = NULL
   )+
-
+  
+  # Make theme match figure 5
   theme_bw(base_size = 12) +
   theme(
     plot.title = element_text(face = "bold", size = 12, hjust = 0),
@@ -507,27 +487,14 @@ fig4_imp
 
 ### Explanation of Figure 4 Improvements 
 
-The new graph improves readability by dodging the two groups slightly using the "position_dodge" function. By doing this, it prevents the standard deviation error bars from overlapping, making interpretation easier. We also made the group identity clearer by creating filled and open points (HIIT-filled points, EDU-open points). The mean labels are  moved to avoid collisions. We also replaced hard-coded texts with complete case data and set a fixed random seed. The seed iterations so that any automatic label placement is identical each time the code is run. This allows the figure to be reproduced exactly across different computers and runs.
+The new graph improves readability by dodging the two groups slightly. By doing this, it prevents the standard deviation error bars from overlapping, making interpretation easier. We also made the group identity clearer by creating filled and open points (HIIT-filled points, EDU-open points). The mean labels are made into clearer group labels and are moved to avoid collisions. The y-axis range was made slightly narrower to highlight the differences between the lines better. The legend is simpler and has longer line indicators (solid vs dotted) that makes the distinction between the groups visibly apparent.
 
 ### Figure 5
 ```{r figure-5}
 # Write your code for reproducing, and then improving Figure 5. Present both figures together. Under the figures, explain how you've improved Figure 5 and why you consider this an improvement.
 
-library(here)
-library(readr)
-library(dplyr)
-library(tidyr)
-library(ggplot2)
-library(janitor)
-
-# Load and clean the dataset
-data_path <- here("data", "HIIT-postpartum-depression.csv")
-
-data <- read_csv(data_path, na = c("", "NA", "#NULL!"), show_col_types = FALSE) %>%
-  clean_names()
-
 # Select relevant variables and define intervention groups
-fig5_by_group <- data %>%
+fig5_by_group <- data_raw %>%
   mutate(group = case_when(
       intervention_group == 1 ~ "HIIT",
       intervention_group == 2 ~ "EDU",
@@ -615,7 +582,6 @@ fig5_plot
 ```
 
 ### Improved Figure 5
-
 ```{r figure-5-improved}
 # dodge so SD bars don't overlap
 pd_5 <- position_dodge(width = 0.20)
@@ -672,7 +638,7 @@ fig5_improved <- ggplot(mean_sd_imp,
     y = "Physical health score\n(higher = better physical health)",
     linetype = NULL,
     caption = "Note. Values in parentheses indicate percentage change from before the intervention.") +
-  theme_classic(base_size = 12) +
+  theme_bw(base_size = 12) +
   theme(
     plot.title = element_text(face = "bold", hjust = 0),
     plot.subtitle = element_text(size = 10, hjust = 0, margin = margin(b = 8)),
@@ -683,6 +649,8 @@ fig5_improved <- ggplot(mean_sd_imp,
     axis.ticks = element_blank(),
     axis.text.x = element_text(margin = margin(t = 8)),
     panel.grid.major.y = element_line(colour = "grey85", linewidth = 0.6),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
     legend.title = element_text(margin = margin(b = 6)),
     legend.box.margin = margin(t = 6),
     plot.caption = element_text(hjust = 0, margin = margin(t = 8))) +
