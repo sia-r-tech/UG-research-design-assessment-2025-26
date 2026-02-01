@@ -709,3 +709,11 @@ The new figure improves the interpretability of the results because it shows the
 ## Task 2: FAIR data principles
 
 ## Task 3: Reproducibility brief
+
+The paper implements the persona of a consultant applying The Turing Way and moves beyond the “trust me” model (Begley & Ioannidis, 2015). Utilising Mendeley Data as the raw dataset, an open data source, enables all open research practices to reproduce the work. Registration on ClinicalTrials.gov, in addition to adhering to CONSORT guidelines, minimises research design waste and ensures replicability by providing clear instructions for others to follow. 
+
+The analysis was performed in IBM SPSS v27; however, these files are not published. The first recommendation would be to export and publish the SPSS Syntax files (.sps) to reduce cognitive bias. Without code, specific steps such as Intention-to-treat (ITT) analyses using linear interpolation cannot be audited for selective reporting (Begley & Ioannidis, 2015). This satisfies the requirement for Computational Reproducibility (Same Data, Same Analysis).
+Reliance on proprietary software (SPSS) creates a financial barrier for other researchers. Therefore, using open-source software, such as R or Python, for analysis allows for cost-free robustness checks. This ensures results are the same across different environments without requiring expensive licenses. This is important given that 83% of researchers found difficulty securing funding for replication studies (Cobey et al., 2024), making low-cost verification essential. Another benefit of this is waste reduction associated with inefficient research regulation and management.  
+
+The sample is composed exclusively of Caucasians, and variable coding is ambiguous without a dictionary. Therefore, providing a codebook or data dictionary would be useful. To create generalisability (Different Data, Different Analysis) in addition to equity, diversity and inclusion, future researchers need clear definitions to apply the workflow to diverse populations. Ambiguous methods prevent valid extension of research, contributing to the 85% of research investment that is wasted (MacLeod et al., 2014). 
+(283 words)
